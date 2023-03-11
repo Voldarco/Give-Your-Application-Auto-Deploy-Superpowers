@@ -327,7 +327,6 @@ jobs:
       - revert-migrations
       - remove-bucket-contents
       - destroy-environment
-#
 
   deploy-backend:
     docker:
