@@ -514,17 +514,17 @@ workflows:
         #   branches:
         #     only: [Cloud-DevOps]
 
-#       # - test-frontend:
-#       #     requires: [build-frontend]
-#       #     # filters:
-#       #     #   branches:
-#       #     #     only: [Cloud-DevOps]
+      - test-frontend:
+          requires: [build-frontend]
+          # filters:
+          #   branches:
+          #     only: [Cloud-DevOps]
 
-#       # - test-backend:
-#       #     requires: [build-backend]
-#       #     # filters:
-#       #     #   branches:
-#       #     #     only: [Cloud-DevOps]
+      - test-backend:
+          requires: [build-backend]
+          # filters:
+          #   branches:
+          #     only: [Cloud-DevOps]
 
 #       # - scan-backend:
 #       #     requires: [build-backend]
