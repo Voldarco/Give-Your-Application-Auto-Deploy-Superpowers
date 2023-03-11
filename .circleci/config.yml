@@ -45,7 +45,7 @@ commands:
     parameters:
       bucket_name:
         type: string
-        default: "5a6092b"
+        default: "${CIRCLE_WORKFLOW_ID:0:7}"
     steps:
       - run:
           name: Remove contents of bucket
@@ -375,7 +375,7 @@ jobs:
           command: |
             sudo apt install curl -y
             BACKEND_PUBLIC_IP=$(aws ec2 describe-instances \
-              --filters "Name=tag:Name,Values=backend-5a6092b" \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --output text)
 
@@ -386,11 +386,11 @@ jobs:
       - run:
           name: Frontend smoke test.
           command: |
-            FRONTEND_WEBSITE=http://udapeople-5a6092b.s3-website.${AWS_DEFAULT_REGION}.amazonaws.com
+            FRONTEND_WEBSITE=http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website.${AWS_DEFAULT_REGION}.amazonaws.com
             if curl -s $FRONTEND_WEBSITE -v | grep "Welcome"
             then
               # This is the intentional error, if "Welcome" is indeed in the response this step will exit with exit code 1
-              exit 1
+              exit 0
             else
               exit 1
             fi
@@ -400,89 +400,79 @@ jobs:
       - destroy-environment
 
 
-#   cloudfront-update:
-#     docker:
-#       - image: circleci/node:13.8.0
-#     steps:
-#       - checkout
-#       - run:
-#           name: Install dependencies
-#           command: |
-#             # your code here
-#             sudo apt install -y tar curl gzip
-#             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-#             unzip -qq awscliv2.zip
-#             sudo ./aws/install
-#       - run:
-#           name: Update cloudfront distribution
-#           command: |
-#             # your code here
-#             export OldWorkflowID=$(aws cloudformation list-exports \
-#             --query "Exports[?Name==\`WorkflowID\`].Value" \
-#             --no-paginate --output text)
+  cloudfront-update:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            # your code here
+            sudo apt install -y tar curl gzip
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip -qq awscliv2.zip
+            sudo ./aws/install
+      - run:
+          name: Update cloudfront distribution
+          command: |
+            # your code here
+            export OldWorkflowID=$(aws cloudformation list-exports \
+            --query "Exports[?Name==\`WorkflowID\`].Value" \
+            --no-paginate --output text)
 
-#             echo "${OldWorkflowID}" >> ~/OldWorkflowID.txt
-#             echo "${OldWorkflowID}"
+            echo "${OldWorkflowID}" >> ~/OldWorkflowID.txt
+            echo "${OldWorkflowID}"
 
-#             aws cloudformation deploy \
-#             --template-file .circleci/files/cloudfront.yml \
-#             --stack-name udapeople-cloudfront \
-#             --parameter-overrides WorkflowID=${CIRCLE_WORKFLOW_ID:0:7} \
+            aws cloudformation deploy \
+            --template-file .circleci/files/cloudfront.yml \
+            --stack-name udapeople-cloudfront \
+            --parameter-overrides WorkflowID=${CIRCLE_WORKFLOW_ID:0:7} \
 
-#       - revert-migrations
-#       - remove-bucket-contents
-#       - destroy-environment
-#
+      - revert-migrations
+      - remove-bucket-contents
+      - destroy-environment
 
-#   cleanup:
-#     docker:
-#       - image: amazon/aws-cli
-#     steps:
-#       - checkout
-#       - run:
-#           name: Get old stack workflow id and remove old stacks and bucket contents
-#           command: |
-#             # Fetch the Old workflow ID
-#             export OldWorkflowID=$(aws cloudformation \
-#               list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
-#                 --no-paginate --output text)
-#             echo OldWorkflowID: "${OldWorkflowID}"
-#             echo CIRCLE_WORKFLOW_ID "${CIRCLE_WORKFLOW_ID:0:7}"
-#             # Fetch the stack names
-#             export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
-#             --stack-status-filter CREATE_COMPLETE --no-paginate --output text))
-#             STACKSID=($(aws cloudformation describe-stacks --query "Stacks[*].Outputs[?OutputKey==\`ID\`].OutputValue" --no-paginate --output text))
-#             echo Stack ids: "${STACKSID[@]}"
-#             echo Stack names: "${STACKS[@]}"
-#             echo $OldWorkflowID ${CIRCLE_WORKFLOW_ID:0:7}
 
-#             for (( index=0; index<${#STACKS[@]}; index+=2 )) 
-#             do
-#               if [[ "${CIRCLE_WORKFLOW_ID:0:7}" != "${STACKS[index]##*-}" ]]
-#               then
-#                   # your code here
-#                   echo "----------Deletes cofirmed------------"
-#                   aws s3 rm "s3://udapeople-${STACKS[index]##*-}" --recursive
-#                   aws cloudformation delete-stack --stack-name "${STACKS[index]}"
-#                   aws cloudformation delete-stack --stack-name "${STACKS[((++index))]}"
-#               else
-#                   echo "----------Cannot cleanup------------"
-#               fi
-#             done
+  cleanup:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Get old stack workflow id and remove old stacks and bucket contents
+          command: |
+            # Fetch the Old workflow ID
+            export OldWorkflowID=$(aws cloudformation \
+              list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
+                --no-paginate --output text)
+            echo OldWorkflowID: "${OldWorkflowID}"
+            echo CIRCLE_WORKFLOW_ID "${CIRCLE_WORKFLOW_ID:0:7}"
+            # Fetch the stack names
+            export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
+            --stack-status-filter CREATE_COMPLETE --no-paginate --output text))
+            STACKSID=($(aws cloudformation describe-stacks --query "Stacks[*].Outputs[?OutputKey==\`ID\`].OutputValue" --no-paginate --output text))
+            echo Stack ids: "${STACKSID[@]}"
+            echo Stack names: "${STACKS[@]}"
+            echo $OldWorkflowID ${CIRCLE_WORKFLOW_ID:0:7}
 
-#       - revert-migrations
-#       - remove-bucket-contents
-#       - destroy-environment
-#
+            for (( index=0; index<${#STACKS[@]}; index+=2 )) 
+            do
+              if [[ "${CIRCLE_WORKFLOW_ID:0:7}" != "${STACKS[index]##*-}" ]]
+              then
+                  # your code here
+                  echo "----------Deletes cofirmed------------"
+                  aws s3 rm "s3://udapeople-${STACKS[index]##*-}" --recursive
+                  aws cloudformation delete-stack --stack-name "${STACKS[index]}"
+                  aws cloudformation delete-stack --stack-name "${STACKS[((++index))]}"
+              else
+                  echo "----------Cannot cleanup------------"
+              fi
+            done
 
-#   notify_on_success:
-#     docker:
-#       - image: cimg/base:stable
-#     steps:
-#       - slack/notify:
-#           event: pass
-#           channel: cicd-pipeline
-#           template: success_tagged_deployment_1
+      - revert-migrations
+      - remove-bucket-contents
+      - destroy-environment
 
 workflows:
   default:
@@ -497,22 +487,22 @@ workflows:
       #     requires: [build-backend]
       # - scan-frontend:
       #     requires: [build-frontend]
-      # - deploy-infrastructure
+      - deploy-infrastructure
           # requires: [test-frontend, test-backend, scan-frontend, scan-backend]
           # filters:
           #   branches:
           #     only: [test-feature-branch]
-      # - configure-infrastructure:
-      #     requires: [deploy-infrastructure]
-      # - run-migrations:
-      #     requires: [configure-infrastructure]
-      # - deploy-frontend:
-      #     requires: [run-migrations]
-      # - deploy-backend:
-      #     requires: [run-migrations]
-      - smoke-test
-      #     requires: [deploy-backend, deploy-frontend]
-      # - cloudfront-update:
-      #     requires: [smoke-test]
-      # - cleanup:
-      #     requires: [cloudfront-update]
+      - configure-infrastructure:
+          requires: [deploy-infrastructure]
+      - run-migrations:
+          requires: [configure-infrastructure]
+      - deploy-frontend:
+          requires: [run-migrations]
+      - deploy-backend:
+          requires: [run-migrations]
+      - smoke-test:
+          requires: [deploy-backend, deploy-frontend]
+      - cloudfront-update:
+          requires: [smoke-test]
+      - cleanup:
+          requires: [cloudfront-update]
