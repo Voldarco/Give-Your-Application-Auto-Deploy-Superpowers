@@ -278,8 +278,8 @@ jobs:
             fi
 
       - revert-migrations
-      - remove-bucket-contents
-      - destroy-environment
+      # - remove-bucket-contents
+      # - destroy-environment
 
   deploy-frontend:
     docker:
@@ -521,11 +521,11 @@ workflows:
       #     filters:
       #       branches:
       #         only: [main]
-      # - run-migrations:
-      #     requires: [configure-infrastructure]
-      #     filters:
-      #       branches:
-      #         only: [main]
+      - run-migrations:
+          requires: [configure-infrastructure]
+          # filters:
+          #   branches:
+          #     only: [main]
       # - deploy-frontend:
       #     requires: [run-migrations]
       #     filters:

@@ -18,7 +18,7 @@ commands:
             SUCCESS=$(curl --insecure  https://kvdb.io/YMddwfZB9ab9UdUuYWcUCb/migration_<< parameters.Workflow_ID >>)
 
             # Logic for reverting the database state
-            if (( $SUCCESS == 1 ));
+            if [ $SUCCESS == 1 ];
             then
               cd ~/project/backend
               npm install
@@ -477,56 +477,77 @@ jobs:
 workflows:
   default:
     jobs:
-      - build-frontend:
-          filters:
-            branches:
-              only: [Cloud-DevOps]
+      # - build-frontend:
+      #     filters:
+      #       branches:
+      #         only: [Cloud-DevOps]
 
-      - build-backend:
-          filters:
-            branches:
-              only: [Cloud-DevOps]
+      # - build-backend:
+      #     filters:
+      #       branches:
+      #         only: [Cloud-DevOps]
 
-      - test-frontend:
-          requires: [build-frontend]
-          filters:
-            branches:
-              only: [Cloud-DevOps]
+      # - test-frontend:
+      #     requires: [build-frontend]
+      #     filters:
+      #       branches:
+      #         only: [Cloud-DevOps]
 
-      - test-backend:
-          requires: [build-backend]
-          filters:
-            branches:
-              only: [Cloud-DevOps]
+      # - test-backend:
+      #     requires: [build-backend]
+      #     filters:
+      #       branches:
+      #         only: [Cloud-DevOps]
 
-      - scan-backend:
-          requires: [build-backend]
-          filters:
-            branches:
-              only: [Cloud-DevOps]
+      # - scan-backend:
+      #     requires: [build-backend]
+      #     filters:
+      #       branches:
+      #         only: [Cloud-DevOps]
 
-      - scan-frontend:
-          requires: [build-frontend]
-          filters:
-            branches:
-              only: [Cloud-DevOps]
+      # - scan-frontend:
+      #     requires: [build-frontend]
+      #     filters:
+      #       branches:
+      #         only: [Cloud-DevOps]
 
-      # - deploy-infrastructure #
-      #     # requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-      #     # filters:
-      #     #   branches:
-      #     #     only: [test-feature-branch]
+      # - deploy-infrastructure:
+      #     requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+      #     filters:
+      #       branches:
+      #         only: [main]
       # - configure-infrastructure:
       #     requires: [deploy-infrastructure]
+      #     filters:
+      #       branches:
+      #         only: [main]
       # - run-migrations:
       #     requires: [configure-infrastructure]
+      #     filters:
+      #       branches:
+      #         only: [main]
       # - deploy-frontend:
       #     requires: [run-migrations]
+      #     filters:
+      #       branches:
+      #         only: [main]          
       # - deploy-backend:
       #     requires: [run-migrations]
+      #     filters:
+      #       branches:
+      #         only: [main]          
       # - smoke-test:
       #     requires: [deploy-backend, deploy-frontend]
+      #     filters:
+      #       branches:
+      #         only: [main]
       # - cloudfront-update:
       #     requires: [smoke-test]
+      #     filters:
+      #       branches:
+      #         only: [main]
       # - cleanup:
       #     requires: [cloudfront-update]
+      #     filters:
+      #       branches:
+      #         only: [main]
