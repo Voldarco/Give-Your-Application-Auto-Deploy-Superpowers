@@ -521,8 +521,8 @@ workflows:
       #     filters:
       #       branches:
       #         only: [main]
-      - run-migrations:
-          requires: [configure-infrastructure]
+      - run-migrations
+          # requires: [configure-infrastructure]
           # filters:
           #   branches:
           #     only: [main]
