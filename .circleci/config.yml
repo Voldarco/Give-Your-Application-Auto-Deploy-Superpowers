@@ -266,7 +266,7 @@ jobs:
             cd backend
             # Run and save the migration output
             npm install --no-audit --no-fund
-            npm run migrationsAA > migrations_dump.txt
+            npm run migrations > migrations_dump.txt
             cat migrations_dump.txt
       - run:
           name: Send migration results to kvdb
@@ -278,8 +278,8 @@ jobs:
             fi
 
       - revert-migrations
-      # - remove-bucket-contents
-      # - destroy-environment
+      - remove-bucket-contents
+      - destroy-environment
 
   deploy-frontend:
     docker:
@@ -521,7 +521,7 @@ workflows:
       #     filters:
       #       branches:
       #         only: [main]
-      - run-migrations
+      # - run-migrations:
           # requires: [configure-infrastructure]
           # filters:
           #   branches:
